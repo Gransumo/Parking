@@ -1,0 +1,25 @@
+
+body {
+    background-image: url('./cibeles.jpg');
+    background-size: cover; /* Ajusta la imagen para cubrir todo el contenedor */
+    height: 100vh;
+}
+
+/* Estilos para las plazas de aparcamiento */
+.plaza {
+    margin: 5px; /* Margen entre las plazas */
+    line-height: 50px; /* Altura de línea para centrar verticalmente el texto */
+}
+
+/* Estilos para el icono del coche */
+.fa-car {
+    color: blue; /* Color del icono del coche */
+}
+
+.libre {
+    background-color: green;
+}
+
+.ocupado {
+    background-color: red;
+}

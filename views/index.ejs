@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= titulo %>
+    </title>
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!-- Estilos de Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Iconos de Font Awesome -->
+    <script src="https://kit.fontawesome.com/3f7960f673.js" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="estilo.css">
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Gestión de Aparcamiento</a>
+        </div>
+    </nav>
+    <div class="container-planta">
+
+        <button onclick="mostrarPlazas('planta1')" class="btn btn-primary mt-3">Mostrar plazas de la primera
+            planta</button>
+        <button onclick="mostrarPlazas('planta2')" class="btn btn-primary mt-3">Mostrar plazas de la segunda
+            planta</button>
+        <!-- Separación entre plantas -->
+        <div class="my-5"></div>
+        <div class="row">
+            <% for (let i=0; i < 10; i++) { %>
+                <% if(plazas[i].Disponible) var classs='libre' ; else classs='ocupado' %>
+                    <div class="col-1 plaza border d-flex justify-content-center py-3 <%=classs %>"
+                        id="<%= plazas[i].id_plaza %>">
+                        <i class="fa-solid fa-car"></i>
+                    </div>
+                    <% } %>
+        </div>
+        <div class="my-5"></div>
+        <div class="row">
+            <% for (let i=10; i < 20; i++) { %>
+                <% if(plazas[i].Disponible) var classs='libre' ; else classs='ocupado' %>
+                    <div class="col-1 plaza border d-flex justify-content-center py-3 <%=classs %>"
+                        id="<%= plazas[i].id_plaza %>">
+                        <i class="fa-solid fa-car"></i>
+                    </div>
+                    <% } %>
+        </div>
+        <button class="btn btn-primary mt-3" id="entrar_boton">Entrada
+            de coche</button>
+        <button class="btn btn-danger mt-3" id="salir_boton">Salida de
+            coche</button>
+        <script src="client.js"></script>
+    </div>
+
+</body>
+
+</html>
