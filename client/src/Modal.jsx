@@ -12,7 +12,7 @@ const Modal = ({ isOpen, onClose, modalTitle, children }) => {
                     <h3>{modalTitle}</h3>
                 </ModalTitle>
 
-                <CloseButton onClick={onClose}>
+                <CloseButton onClick={() => { onClose(false); }}>
                     <i className="fa-solid fa-xmark"></i>
                 </CloseButton>
                 

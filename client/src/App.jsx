@@ -4,37 +4,8 @@ import Slot from "./slot";
 import { Col, Row, Table } from 'react-bootstrap';
 import WebSocketClient from './WebSocketManager'
 import Modal from './Modal';
-import Time from './time';
-
-
-// Funcion que hace un fetch para obtener las ganancias del dia
-const getProfits = async () => {
-    return (
-        // Iniciar el fetch
-        await fetch('http://localhost:3001/profits', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-            .then((response) => {
-                // Si la respuesta es negativa se lanza error
-                if (!response.ok) {
-                    throw new Error(`Fetch failed, error code: ${response.status}`);
-                }
-
-                //Se retorna el response en formato json al siguiente then
-                return response.json();
-            })
-            .then((data) => {
-                // El fetch retorna la data
-                return (data);
-            })
-            .catch((error) => {
-                // Se manejan errores durante el fetch
-                console.error('Error getting profits: ' + error.message);
-            }));
-}
+import TimePassedCounter from './time';
+import Profits from './profits';
 
 // Funcion que enciende y apaga el parking
 const switchParkingState = async (state) => {
@@ -52,7 +23,7 @@ const switchParkingState = async (state) => {
         })
         .catch((error) => {
             // Se manejan errores durante el fetch
-            console.error('Error getting profits: ' + error.message);
+            console.error('Error: ' + error.message);
         })
 }
 
@@ -60,7 +31,6 @@ const App = () => {
     // Declaro estados
     const [datosPlazas, setDatosPlazas] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
-    const [profits, setProfits] = useState(null);
 
     // Función interruptor de parking
     const changeState = () => {
@@ -73,28 +43,9 @@ const App = () => {
         switchParkingState(state);
     }
 
-    // Obtener las ganancias del dia cada vez que cambian los datos de las plazas
-    useEffect(() => {
-        try {
-            // Se declara funcion asincrona para obtener las ganancias
-            const fetchData = async () => {
-                const newProfits = await getProfits();
-                if (newProfits) {
-                    setProfits(newProfits.montoTotal);
-                }
-            };
-
-            // Se ejecuta función asincrona
-            fetchData();
-        } catch (error) {
-            // Manejo de errores
-            console.error('Error getting profits: ' + error.message);
-        }
-    }, [datosPlazas]);
-
     // Se declara una conexion una sola vez al cargar el componente
     useEffect(() => {
-        try {
+        try {  
             // Se crea objeto WebSocketClient pasandole la direccion del servidor y la funcion a ejecutar cuando reciba un mensaje
             const wsClient = new WebSocketClient('ws://localhost:3001', setDatosPlazas);
             // Se retorna una funcion de limpieza que se ejecutará cuando el componente se desmonte
@@ -106,19 +57,14 @@ const App = () => {
         }
     }, []);
 
-    // Funcion que se encarga de abrir el modal
-    const handleOpenModal = () => {
-        setModalOpen(true);
-    };
-
-    // Funcion que se encarga de cerrar el modal
-    const handleCloseModal = () => {
-        setModalOpen(false);
+    // Funcion que se encarga de manejar el estado del modal
+    const handleModal = (state) => {
+        setModalOpen(state);
     };
 
     // Si datosPlazas no tiene nada pondrá pantalla de carga (Cuando el servidor no esté levantado)
     if (!datosPlazas) {
-        return <div>Cargando...</div>;
+        return <div className='container-fluid vh-100 d-flex justify-content-center align-items-center'>Servidor apagado</div>;
     }
 
     // Si lo retornado por el servidor (datosPlazas) no es un array se muestra la advertencia por pantalla
@@ -127,8 +73,8 @@ const App = () => {
     }
 
     // Separar los datos en las plantas correspondientes
-    const floor1 = datosPlazas.slice(0, 10);
-    const floor2 = datosPlazas.slice(10, 20);
+    const floor1 = datosPlazas.slice(0, datosPlazas.length / 2);
+    const floor2 = datosPlazas.slice(datosPlazas.length / 2, datosPlazas.length);
 
     // Función encargada de variar entre planta 1 y planta 2 para mostrar
     const handleFloorSelect = (floor) => {
@@ -150,16 +96,17 @@ const App = () => {
         else {
             // Se da al interruptor de d-none en la planta 2 para mostrarlo
             floor2_div.classList.toggle('d-none');
-            
+
             // Si la planta 1 no contiene d-none, es decir, se está mostrando, se da al interruptor para ocultarla
             if (!floor1_div.classList.contains('d-none')) {
                 floor1_div.classList.toggle('d-none');
             }
         }
     };
+    //console.log(floor1);
     return (
-        <div className='container-fluid vh-100 d-flex justify-content-center align-items-center'>
-            <div className='container p-4'>
+        <div className='d-flex min-vh-100 align-items-center justify-content-center'>
+            <div>
                 {/* ON / OFF */}
                 <div className="form-check form-switch d-flex justify-content-center">
                     <input className="form-check-input select-status" type="checkbox" role="switch" id="parkingStateChanger" onChange={changeState} />
@@ -175,25 +122,23 @@ const App = () => {
 
                 {/* FLOOR 1 */}
                 <div className='p-4 m-4 border border-black planta text-center d-none' id='floor1_div'>
-                    <div><h1>PLANTA 1</h1></div>
+                    <h1>PLANTA 1</h1>
                     <Row xs={1} md={2} lg={3} xl={5} className="g-4">
-                        {
-                            // Se itera sobre los datos de la planta 1 para representar las plazas
-                            floor1.map((plaza, id) => (
-                                <Slot key={plaza.id} id={plaza.id} status={plaza.Disponible} />
-                            ))
-                        }
+
+                        {floor1.map((plaza) => (
+                            <Slot key={plaza.Id_Plaza} id={plaza.Id_Plaza} status={plaza.Disponible} />
+                        ))}
                     </Row>
                 </div>
 
                 {/* FLOOR 2 */}
                 <div className='p-4 m-4 border border-black planta text-center d-none' id='floor2_div'>
-                    <div><h1>PLANTA 2</h1></div>
+                    <h1>PLANTA 2</h1>
                     <Row xs={1} md={2} lg={3} xl={5} className="g-4">
                         {
                             // Se itera sobre los datos de la planta 2 para representar las plazas
                             floor2.map((plaza, id) => (
-                                <Slot key={plaza.id} id={plaza.id} status={plaza.Disponible} />
+                                <Slot key={plaza.Id_Plaza} id={plaza.Id_Plaza} status={plaza.Disponible} />
                             ))
                         }
                     </Row>
@@ -204,7 +149,7 @@ const App = () => {
                     onClose -> funcion que se encargará de cerrar el modal
                     modalTitle -> titulo del modal
                 */}
-                <Modal isOpen={modalOpen} onClose={handleCloseModal} modalTitle={'INFORMACION DETALLADA'}>
+                <Modal isOpen={modalOpen} onClose={handleModal} modalTitle={'INFORMACION DETALLADA'}>
                     <Row>
                         <Col>
                             <div className="text-center">
@@ -215,7 +160,7 @@ const App = () => {
                                     <tr>
                                         <th>Plaza</th>
                                         <th>Matricula</th>
-                                        {<th>Tiempo Transcurrido</th>}
+                                        <th>Tiempo Transcurrido</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -223,7 +168,9 @@ const App = () => {
                                         <tr key={spot.Id_Plaza}>
                                             <td>{spot.Id_Plaza}</td>
                                             <td>{(spot.Matricula) ? spot.Matricula : "Libre"}</td>
-                                            <td><Time datetime={spot.FechaHoraInicio} /></td>
+                                            <td>
+                                                <TimePassedCounter dateTime={spot.FechaHoraInicio} />
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -238,7 +185,7 @@ const App = () => {
                                     <tr>
                                         <th>Plaza</th>
                                         <th>Matricula</th>
-                                        {<th>Tiempo Transcurrido</th>}
+                                        <th>Tiempo Transcurrido</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -246,7 +193,9 @@ const App = () => {
                                         <tr key={spot.Id_Plaza}>
                                             <td>{spot.Id_Plaza}</td>
                                             <td>{(spot.Matricula) ? spot.Matricula : "Libre"}</td>
-                                            <td><Time datetime={spot.FechaHoraInicio} /></td>
+                                            <td>
+                                                <TimePassedCounter dateTime={spot.FechaHoraInicio} />
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -255,13 +204,13 @@ const App = () => {
                     </Row>
                     <Table striped bordered hover>
                         <tbody>
-                            <td className='text-center'>Ganancias del Dia: {profits}€ </td>
+                            <td className='text-center'>Ganancias del Dia: <Profits />€ </td>
                         </tbody>
                     </Table>
                 </Modal>
-                <div className="buttoms p-4">
                     {/* Boton que abre el modal */}
-                    <button onClick={handleOpenModal} className='btn btn-primary'>Ver Informacion Detallada</button>
+                <div className="p-4">
+                    <button onClick={() => { handleModal(true); }} className='btn btn-primary'>Ver Informacion Detallada</button>
                 </div>
             </div>
         </div>

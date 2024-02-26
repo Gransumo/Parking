@@ -10,7 +10,6 @@ function sendData(data) {
     if (wss) {
         wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
-                //console.log("enviado");
                 client.send(JSON.stringify(data));
             }
         })

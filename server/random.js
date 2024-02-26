@@ -3,6 +3,8 @@ const parkingUtils = require('./inserts');
 const send = require('./sendData');
 var intervalEntry = null;
 var intervalExit = null;
+const conf = require('./config');
+
 
 const generateRandomLicensePlate = () => {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -25,9 +27,15 @@ const generateRandomLicensePlate = () => {
     return licensePlate;
 };
 
-function getRandomInterval() {
-    const minTiempo = 10 * 1000;
-    const maxTiempo = 20 * 1000;
+function getExitInterval() {
+    const minTiempo = conf.min_interval_exit * 1000;
+    const maxTiempo = conf.max_interval_exit * 1000;
+    return Math.floor(Math.random() * (maxTiempo - minTiempo + 1)) + minTiempo;
+}
+
+function getEntryInterval() {
+    const minTiempo = conf.min_interval_entry * 1000;
+    const maxTiempo = conf.max_interval_entry * 1000;
     return Math.floor(Math.random() * (maxTiempo - minTiempo + 1)) + minTiempo;
 }
 
@@ -43,7 +51,7 @@ const fillParking = async () => {
         console.log("TODO ESTÁ OCUPADO");
     }
     clearInterval(intervalEntry);
-    intervalEntry = setInterval(fillParking, getRandomInterval());
+    intervalEntry = setInterval(fillParking, getEntryInterval());
 }
 
 const emptyParking = async () => {
@@ -58,12 +66,12 @@ const emptyParking = async () => {
         console.log("TODO ESTA VACIO");
     }
     clearInterval(intervalExit);
-    intervalExit = setInterval(emptyParking, getRandomInterval());
+    intervalExit = setInterval(emptyParking, getExitInterval());
 }
 
 function initParking() {
-    intervalEntry = setInterval(fillParking, getRandomInterval());
-    intervalExit = setInterval(emptyParking, getRandomInterval());
+    intervalEntry = setInterval(fillParking, getEntryInterval());
+    intervalExit = setInterval(emptyParking, getExitInterval());
     console.log("Starting Parking...");
     return (true);
 };
